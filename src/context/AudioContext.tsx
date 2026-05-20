@@ -14,21 +14,21 @@ interface AudioContextType {
 const AudioCtx = createContext<AudioContextType | null>(null);
 
 const BG_MUSIC_SRCS: Record<WorldId, string> = {
-  beauty: '/maths/audio/bg-beauty.mp3',
-  dance: '/maths/audio/bg-dance.mp3',
-  singing: '/maths/audio/bg-singing.mp3',
-  chocolate: '/maths/audio/bg-chocolate.mp3',
-  parrots: '/maths/audio/bg-parrots.mp3',
-  aek: '/maths/audio/bg-aek.mp3',
-  coffee: '/maths/audio/bg-coffee.mp3',
+  beauty: '/asteri-tis-skinis/audio/bg-beauty.mp3',
+  dance: '/asteri-tis-skinis/audio/bg-dance.mp3',
+  singing: '/asteri-tis-skinis/audio/bg-singing.mp3',
+  chocolate: '/asteri-tis-skinis/audio/bg-chocolate.mp3',
+  parrots: '/asteri-tis-skinis/audio/bg-parrots.mp3',
+  aek: '/asteri-tis-skinis/audio/bg-aek.mp3',
+  coffee: '/asteri-tis-skinis/audio/bg-coffee.mp3',
 };
 
 const SFX_SRCS: Record<SfxName, string> = {
-  correct: '/maths/audio/correct.mp3',
-  wrong: '/maths/audio/wrong.mp3',
-  levelComplete: '/maths/audio/level-complete.mp3',
-  star: '/maths/audio/star.mp3',
-  button: '/maths/audio/button.mp3',
+  correct: '/asteri-tis-skinis/audio/correct.mp3',
+  wrong: '/asteri-tis-skinis/audio/wrong.mp3',
+  levelComplete: '/asteri-tis-skinis/audio/level-complete.mp3',
+  star: '/asteri-tis-skinis/audio/star.mp3',
+  button: '/asteri-tis-skinis/audio/button.mp3',
 };
 
 export function AudioProvider({ children }: { children: ReactNode }) {

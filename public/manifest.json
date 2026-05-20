@@ -2,19 +2,19 @@
   "name": "Αστέρι της Σκηνής",
   "short_name": "Αστέρι",
   "description": "Μάθε πολλαπλασιασμό και διαίρεση παίζοντας!",
-  "start_url": "/maths/",
+  "start_url": "/asteri-tis-skinis/",
   "display": "standalone",
   "background_color": "#1a0033",
   "theme_color": "#1a0033",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/maths/icons/icon-192.png",
+      "src": "/asteri-tis-skinis/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/maths/icons/icon-512.png",
+      "src": "/asteri-tis-skinis/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
