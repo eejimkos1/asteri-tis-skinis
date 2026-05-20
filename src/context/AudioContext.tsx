@@ -1,7 +1,15 @@
-import { createContext, useContext, useRef, useCallback, useEffect, ReactNode } from 'react';
-import { Howl } from 'howler';
+import { createContext, useContext, useCallback, useEffect, ReactNode } from 'react';
 import { useGame } from './GameContext';
 import { WorldId } from '../types';
+import {
+  playCorrectSound,
+  playWrongSound,
+  playStarSound,
+  playLevelCompleteSound,
+  playButtonSound,
+  startBackgroundMusic,
+  stopBackgroundMusic,
+} from '../utils/synthAudio';
 
 type SfxName = 'correct' | 'wrong' | 'levelComplete' | 'star' | 'button';
 
@@ -13,84 +21,43 @@ interface AudioContextType {
 
 const AudioCtx = createContext<AudioContextType | null>(null);
 
-const BG_MUSIC_SRCS: Record<WorldId, string> = {
-  beauty: '/asteri-tis-skinis/audio/bg-beauty.mp3',
-  dance: '/asteri-tis-skinis/audio/bg-dance.mp3',
-  singing: '/asteri-tis-skinis/audio/bg-singing.mp3',
-  chocolate: '/asteri-tis-skinis/audio/bg-chocolate.mp3',
-  parrots: '/asteri-tis-skinis/audio/bg-parrots.mp3',
-  aek: '/asteri-tis-skinis/audio/bg-aek.mp3',
-  coffee: '/asteri-tis-skinis/audio/bg-coffee.mp3',
-};
-
-const SFX_SRCS: Record<SfxName, string> = {
-  correct: '/asteri-tis-skinis/audio/correct.mp3',
-  wrong: '/asteri-tis-skinis/audio/wrong.mp3',
-  levelComplete: '/asteri-tis-skinis/audio/level-complete.mp3',
-  star: '/asteri-tis-skinis/audio/star.mp3',
-  button: '/asteri-tis-skinis/audio/button.mp3',
+const SFX_MAP: Record<SfxName, () => void> = {
+  correct: playCorrectSound,
+  wrong: playWrongSound,
+  levelComplete: playLevelCompleteSound,
+  star: playStarSound,
+  button: playButtonSound,
 };
 
 export function AudioProvider({ children }: { children: ReactNode }) {
   const { state } = useGame();
-  const bgMusicRef = useRef<Howl | null>(null);
-  const sfxCache = useRef<Map<SfxName, Howl>>(new Map());
-
   const { musicEnabled, sfxEnabled, volume } = state.settings;
 
-  useEffect(() => {
-    if (bgMusicRef.current) {
-      bgMusicRef.current.volume(musicEnabled ? volume : 0);
-    }
-  }, [musicEnabled, volume]);
-
   const playBgMusic = useCallback((worldId: WorldId) => {
-    if (bgMusicRef.current) {
-      bgMusicRef.current.stop();
-      bgMusicRef.current.unload();
+    if (musicEnabled) {
+      startBackgroundMusic(worldId, volume * 0.15);
     }
-
-    const src = BG_MUSIC_SRCS[worldId];
-    bgMusicRef.current = new Howl({
-      src: [src],
-      loop: true,
-      volume: musicEnabled ? volume : 0,
-      html5: true,
-    });
-    bgMusicRef.current.play();
   }, [musicEnabled, volume]);
 
   const stopBgMusic = useCallback(() => {
-    if (bgMusicRef.current) {
-      bgMusicRef.current.fade(bgMusicRef.current.volume(), 0, 500);
-      setTimeout(() => {
-        bgMusicRef.current?.stop();
-        bgMusicRef.current?.unload();
-        bgMusicRef.current = null;
-      }, 500);
-    }
+    stopBackgroundMusic();
   }, []);
 
   const playSfx = useCallback((name: SfxName) => {
-    if (!sfxEnabled) return;
-
-    let sound = sfxCache.current.get(name);
-    if (!sound) {
-      sound = new Howl({
-        src: [SFX_SRCS[name]],
-        volume: volume,
-      });
-      sfxCache.current.set(name, sound);
+    if (sfxEnabled) {
+      SFX_MAP[name]();
     }
-    sound.volume(volume);
-    sound.play();
-  }, [sfxEnabled, volume]);
+  }, [sfxEnabled]);
+
+  useEffect(() => {
+    if (!musicEnabled) {
+      stopBackgroundMusic();
+    }
+  }, [musicEnabled]);
 
   useEffect(() => {
     return () => {
-      bgMusicRef.current?.stop();
-      bgMusicRef.current?.unload();
-      sfxCache.current.forEach(s => s.unload());
+      stopBackgroundMusic();
     };
   }, []);
 
