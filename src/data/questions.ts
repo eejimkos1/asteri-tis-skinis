@@ -96,16 +96,18 @@ const WORD_PROBLEMS: Record<WorldId, WordProblemTemplate[]> = {
 
 function generateDistractors(correct: number): number[] {
   const distractors = new Set<number>();
+  const spread = Math.max(3, Math.ceil(correct * 0.15));
+
   const candidates = [
     correct + 1,
     correct - 1,
-    correct + 2,
-    correct - 2,
+    correct + spread,
+    correct - spread,
+    correct + Math.ceil(spread * 1.5),
+    correct - Math.ceil(spread * 0.7),
     correct * 2,
     Math.floor(correct / 2),
     correct + 10,
-    correct - 10,
-    correct + correct,
   ];
 
   for (const c of candidates) {
@@ -116,7 +118,8 @@ function generateDistractors(correct: number): number[] {
   }
 
   while (distractors.size < 3) {
-    const rand = correct + Math.floor(Math.random() * 10) - 5;
+    const range = Math.max(5, Math.ceil(correct * 0.2));
+    const rand = correct + Math.floor(Math.random() * range * 2) - range;
     if (rand > 0 && rand !== correct) {
       distractors.add(rand);
     }

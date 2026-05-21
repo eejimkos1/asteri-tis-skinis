@@ -33,6 +33,19 @@ function checkNewRewards(totalStars: number, currentRewards: string[]): string[]
   return newRewards;
 }
 
+function calculateTier(levelResults: Record<string, LevelResult>): number {
+  const completedLevels = Object.values(levelResults).length;
+  const totalCorrect = Object.values(levelResults).reduce((s, r) => s + r.correct, 0);
+  const totalQuestions = Object.values(levelResults).reduce((s, r) => s + r.total, 0);
+  const accuracy = totalQuestions > 0 ? totalCorrect / totalQuestions : 0;
+
+  if (completedLevels >= 20 && accuracy >= 0.7) return 5;
+  if (completedLevels >= 14 && accuracy >= 0.65) return 4;
+  if (completedLevels >= 8 && accuracy >= 0.6) return 3;
+  if (completedLevels >= 4 && accuracy >= 0.5) return 2;
+  return 1;
+}
+
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'SET_SCREEN':
@@ -67,6 +80,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const newResults = { ...state.progress.levelResults, [key]: result };
       const newRewards = checkNewRewards(newTotalStars, state.progress.unlockedRewards);
       const newUnlockedWorlds = getUnlockedWorlds(newTotalStars);
+      const newTier = calculateTier(newResults);
 
       return {
         ...state,
@@ -74,6 +88,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         progress: {
           ...state.progress,
           totalStars: newTotalStars,
+          currentTier: newTier,
           levelResults: newResults,
           unlockedRewards: newRewards,
           unlockedWorlds: newUnlockedWorlds,
