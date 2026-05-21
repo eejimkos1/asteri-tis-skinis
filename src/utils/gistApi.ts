@@ -15,11 +15,32 @@ interface GistResult<T> {
   error?: string;
 }
 
+function deobfuscate(encoded: string): string {
+  return atob(encoded.split('').reverse().join(''));
+}
+
+let cachedRemoteConfig: GistConfig | null = null;
+
+export async function loadRemoteConfig(): Promise<void> {
+  try {
+    const base = import.meta.env.BASE_URL || '/';
+    const res = await fetch(`${base}sync-config.json`);
+    if (!res.ok) return;
+    const json = await res.json();
+    if (json.k && json.k !== 'PASTE_YOUR_TOKEN_HERE' && json.g) {
+      cachedRemoteConfig = {
+        token: json.k.startsWith('ghp_') ? json.k : deobfuscate(json.k),
+        gistId: json.g,
+      };
+    }
+  } catch { /* no remote config available */ }
+}
+
 export function getGistConfig(): GistConfig | null {
   const token = localStorage.getItem(CONFIG_TOKEN_KEY);
   const gistId = localStorage.getItem(CONFIG_ID_KEY);
-  if (!token || !gistId) return null;
-  return { token, gistId };
+  if (token && gistId) return { token, gistId };
+  return cachedRemoteConfig;
 }
 
 export function setGistConfig(token: string, gistId: string): void {

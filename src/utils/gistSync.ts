@@ -1,5 +1,5 @@
 import { UserProfile } from '../types';
-import { getGistConfig, readGist, writeGist } from './gistApi';
+import { getGistConfig, readGist, writeGist, loadRemoteConfig } from './gistApi';
 
 const USERS_KEY = 'asteri-users';
 
@@ -32,6 +32,8 @@ function getLocalUsers(): Record<string, UserProfile> {
 }
 
 export async function initSync(): Promise<void> {
+  await loadRemoteConfig();
+
   const config = getGistConfig();
   if (!config) {
     setStatus('unconfigured');
