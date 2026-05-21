@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '../../context/GameContext';
 import { useAudio } from '../../context/AudioContext';
@@ -40,7 +40,7 @@ export function GameScreen() {
     }
   }, [currentWorld, state.progress.currentTier, playBgMusic]);
 
-  const handleAnswer = useCallback((selected: number | string) => {
+  const handleAnswer = (selected: number | string) => {
     if (answered !== null) return;
     const question = questions[currentQ];
     if (!question) return;
@@ -63,19 +63,22 @@ export function GameScreen() {
       setStreak(0);
     }
 
+    const newCorrect = correct + (isCorrect ? 1 : 0);
+    const newHearts = hearts - (isCorrect ? 0 : 1);
+
     setTimeout(() => {
-      if (hearts <= 1 && !isCorrect) {
+      if (newHearts <= 0 && !isCorrect) {
         finishLevel(correct, false);
         return;
       }
       if (currentQ >= 9) {
-        finishLevel(correct + (isCorrect ? 1 : 0), true);
+        finishLevel(newCorrect, true);
         return;
       }
       setCurrentQ(q => q + 1);
       setAnswered(null);
     }, 1200);
-  }, [answered, currentQ, questions, hearts, correct, playSfx]);
+  };
 
   function finishLevel(finalCorrect: number, completed: boolean) {
     const time = Math.round((Date.now() - startTime) / 1000);
@@ -277,7 +280,7 @@ export function GameScreen() {
 
       {/* Encouragement on wrong answer */}
       <AnimatePresence>
-        {answered !== null && answered !== question.correctAnswer && (
+        {answered !== null && !(question.operation === 'trivia' ? answered === question.correctTextAnswer : answered === question.correctAnswer) && (
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
