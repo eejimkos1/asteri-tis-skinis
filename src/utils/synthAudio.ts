@@ -226,7 +226,7 @@ const WORLD_MUSIC: Record<WorldId, WorldMusic> = {
     melodyNotes: [N.E4, N.E4, N.G4, N.A4, N.B4, N.A4, N.G4, N.E4, N.Fs4, N.G4, N.A4, N.B4, N.A4, N.G4, N.Fs4, N.E4],
     bassWave: 'square',
     bassNotes: [N.E3, N.E3, N.B3, N.B3, N.A3, N.A3, N.B3, N.B3],
-    rhythmPattern: ['kick', 'hat', 'snare', 'hat', 'kick', 'hat', 'snare', 'hat'],
+    rhythmPattern: ['kick', 'kick', 'snare', 'hat', 'kick', 'snare', 'kick', 'hat'],
     sparkleWave: 'sawtooth',
     sparkleOctave: 2,
     sparkleProb: 0.25,
