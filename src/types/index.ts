@@ -17,7 +17,7 @@ export type Screen =
 
 export type DanceMove = 'spin' | 'jump' | 'clap' | 'kick' | 'wave';
 
-export type MathOperation = 'multiplication' | 'division' | 'addition' | 'subtraction';
+export type MathOperation = 'multiplication' | 'division' | 'addition' | 'subtraction' | 'trivia';
 
 export interface Question {
   text: string;
@@ -25,6 +25,8 @@ export interface Question {
   options: number[];
   operation: MathOperation;
   tier: number;
+  textOptions?: string[];
+  correctTextAnswer?: string;
 }
 
 export interface DanceSequence {

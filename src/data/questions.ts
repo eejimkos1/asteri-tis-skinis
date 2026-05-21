@@ -7,6 +7,73 @@ interface WordProblemTemplate {
   tier: number;
 }
 
+interface TriviaTemplate {
+  text: string;
+  correct: string;
+  distractors: string[];
+  tier: number;
+}
+
+const EUROVISION_TRIVIA: TriviaTemplate[] = [
+  // Tier 1 — Easy (recent/famous winners)
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2023;', correct: 'Σουηδία', distractors: ['Φινλανδία', 'Ουκρανία', 'Ισραήλ'], tier: 1 },
+  { text: 'Ποιος τραγουδιστής κέρδισε για τη Σουηδία το 2023;', correct: 'Loreen', distractors: ['ABBA', 'Måns Zelmerlöw', 'Robin Stjernberg'], tier: 1 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2024;', correct: 'Ελβετία', distractors: ['Κροατία', 'Ισραήλ', 'Ιταλία'], tier: 1 },
+  { text: 'Πώς λέγεται ο νικητής της Eurovision 2024;', correct: 'Nemo', distractors: ['Loreen', 'Kalush', 'Måneskin'], tier: 1 },
+  { text: 'Ποιο τραγούδι τραγούδησε η Ελλάδα στη Eurovision 2024;', correct: 'Zari', distractors: ['Supergirl', 'My Number One', 'Alcohol is Free'], tier: 1 },
+  { text: 'Ποια τραγούδησε το "Zari" για την Ελλάδα (2024);', correct: 'Marina Satti', distractors: ['Έλενα Παπαρίζου', 'Despina Vandi', 'Στεφανία'], tier: 1 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2022;', correct: 'Ουκρανία', distractors: ['Αγγλία', 'Ισπανία', 'Ιταλία'], tier: 1 },
+  { text: 'Ποιο συγκρότημα κέρδισε για την Ιταλία το 2021;', correct: 'Måneskin', distractors: ['Il Volo', 'Ricchi e Poveri', 'Toto Cutugno'], tier: 1 },
+
+  // Tier 2 — Medium (2010s winners, Greek entries)
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2019;', correct: 'Ολλανδία', distractors: ['Αυστραλία', 'Σουηδία', 'Βόρεια Μακεδονία'], tier: 2 },
+  { text: 'Πώς λέγεται ο νικητής για την Ολλανδία (2019);', correct: 'Duncan Laurence', distractors: ['Douwe Bob', 'Waylon', 'Anouk'], tier: 2 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2018;', correct: 'Ισραήλ', distractors: ['Κύπρος', 'Αυστρία', 'Σουηδία'], tier: 2 },
+  { text: 'Ποια τραγούδησε το "Fuego" για την Κύπρο (2018);', correct: 'Eleni Foureira', distractors: ['Tamta', 'Ivi Adamou', 'Αndrea'], tier: 2 },
+  { text: 'Σε ποια θέση ήρθε η Κύπρος με το "Fuego" (2018);', correct: '2η', distractors: ['1η', '3η', '5η'], tier: 2 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2017;', correct: 'Πορτογαλία', distractors: ['Βουλγαρία', 'Σουηδία', 'Μολδαβία'], tier: 2 },
+  { text: 'Πότε κέρδισε η Ελλάδα τη Eurovision;', correct: '2005', distractors: ['2001', '2004', '2008'], tier: 2 },
+  { text: 'Ποια κέρδισε τη Eurovision για την Ελλάδα;', correct: 'Έλενα Παπαρίζου', distractors: ['Ζωή Κωστοπούλου', 'Κυριάκος Παπαδόπουλος', 'Σάκης Ρουβάς'], tier: 2 },
+  { text: 'Πώς λέγεται το νικητήριο τραγούδι της Ελλάδας (2005);', correct: 'My Number One', distractors: ['Shake It', 'Alcohol is Free', 'OPA'], tier: 2 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2016;', correct: 'Ουκρανία', distractors: ['Αυστραλία', 'Ρωσία', 'Σουηδία'], tier: 2 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2015;', correct: 'Σουηδία', distractors: ['Ιταλία', 'Ρωσία', 'Αυστραλία'], tier: 2 },
+  { text: 'Ποιος νίκησε για τη Σουηδία το 2015;', correct: 'Måns Zelmerlöw', distractors: ['Loreen', 'Eric Saade', 'Robin Stjernberg'], tier: 2 },
+
+  // Tier 3 — Harder (2000s, specific songs, placements)
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2014;', correct: 'Αυστρία', distractors: ['Ολλανδία', 'Σουηδία', 'Αρμενία'], tier: 3 },
+  { text: 'Ποιος νίκησε για την Αυστρία το 2014;', correct: 'Conchita Wurst', distractors: ['Udo Jürgens', 'Waterloo', 'Lena'], tier: 3 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2012;', correct: 'Σουηδία', distractors: ['Ρωσία', 'Σερβία', 'Δανία'], tier: 3 },
+  { text: 'Με ποιο τραγούδι νίκησε η Loreen (2012);', correct: 'Euphoria', distractors: ['Tattoo', 'Heroes', 'Popular'], tier: 3 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2010;', correct: 'Γερμανία', distractors: ['Τουρκία', 'Ρουμανία', 'Βέλγιο'], tier: 3 },
+  { text: 'Ποια νίκησε για τη Γερμανία (2010);', correct: 'Lena', distractors: ['Nicole', 'Cascada', 'Ann Sophie'], tier: 3 },
+  { text: 'Ποιος εκπροσώπησε την Ελλάδα το 2012;', correct: 'Eleftheria Eleftheriou', distractors: ['Kalomira', 'Ivi Adamou', 'Helena Paparizou'], tier: 3 },
+  { text: 'Με ποιο τραγούδι πήγε ο Σάκης Ρουβάς στη Eurovision (2004);', correct: 'Shake It', distractors: ['This is Our Night', 'My Number One', 'OPA'], tier: 3 },
+  { text: 'Σε ποια θέση ήρθε ο Σάκης Ρουβάς το 2004;', correct: '3η', distractors: ['1η', '5η', '7η'], tier: 3 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2006;', correct: 'Φινλανδία', distractors: ['Ρωσία', 'Βοσνία', 'Ελλάδα'], tier: 3 },
+  { text: 'Ποιο συγκρότημα κέρδισε για τη Φινλανδία (2006);', correct: 'Lordi', distractors: ['Nightwish', 'HIM', 'The Rasmus'], tier: 3 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2009;', correct: 'Νορβηγία', distractors: ['Ισλανδία', 'Τουρκία', 'Αζερμπαϊτζάν'], tier: 3 },
+  { text: 'Ποιος νίκησε για τη Νορβηγία (2009);', correct: 'Alexander Rybak', distractors: ['Secret Garden', 'Bobbysocks', 'Jahn Teigen'], tier: 3 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2008;', correct: 'Ρωσία', distractors: ['Ουκρανία', 'Ελλάδα', 'Νορβηγία'], tier: 3 },
+
+  // Tier 4 — Expert (details, scores, specific facts)
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2001;', correct: 'Εσθονία', distractors: ['Δανία', 'Γαλλία', 'Λετονία'], tier: 4 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2002;', correct: 'Λετονία', distractors: ['Εσθονία', 'Μάλτα', 'Ρωσία'], tier: 4 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2003;', correct: 'Τουρκία', distractors: ['Βέλγιο', 'Ρωσία', 'Ουκρανία'], tier: 4 },
+  { text: 'Ποια τραγουδίστρια κέρδισε για την Τουρκία (2003);', correct: 'Sertab Erener', distractors: ['Tarkan', 'Hadise', 'MaNga'], tier: 4 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2004;', correct: 'Ουκρανία', distractors: ['Ελλάδα', 'Σερβία', 'Τουρκία'], tier: 4 },
+  { text: 'Ποια κέρδισε για την Ουκρανία (2004);', correct: 'Ruslana', distractors: ['Jamala', 'Verka Serduchka', 'Tina Karol'], tier: 4 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2007;', correct: 'Σερβία', distractors: ['Ουκρανία', 'Ρωσία', 'Φινλανδία'], tier: 4 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2011;', correct: 'Αζερμπαϊτζάν', distractors: ['Ιταλία', 'Σουηδία', 'Δανία'], tier: 4 },
+  { text: 'Ποια χώρα κέρδισε τη Eurovision 2013;', correct: 'Δανία', distractors: ['Αζερμπαϊτζάν', 'Ουκρανία', 'Νορβηγία'], tier: 4 },
+  { text: 'Ποιο ήταν το τραγούδι του Σάκη Ρουβά στη Eurovision 2009;', correct: 'This Is Our Night', distractors: ['Shake It', 'OPA', 'My Number One'], tier: 4 },
+  { text: 'Ποιος τραγούδησε το "OPA" για την Ελλάδα (2010);', correct: 'Γιώργος Αλκαίος', distractors: ['Σάκης Ρουβάς', 'Ηλίας Βρεττός', 'Κωνσταντίνος Αργυρός'], tier: 4 },
+  { text: 'Ποιος τραγούδησε το "Alcohol is Free" (2013);', correct: 'Koza Mostra & Αγάθωνας', distractors: ['Stavento', 'Eleftheria', 'Onirama'], tier: 4 },
+  { text: 'Σε ποια θέση ήρθε η Ελλάδα με το "Alcohol is Free";', correct: '6η', distractors: ['3η', '10η', '12η'], tier: 4 },
+  { text: 'Ποια χώρα έχει κερδίσει τις περισσότερες φορές τη Eurovision;', correct: 'Σουηδία', distractors: ['Ιρλανδία', 'Γαλλία', 'Αγγλία'], tier: 4 },
+  { text: 'Ποια εκπροσώπησε την Ελλάδα στη Eurovision 2021;', correct: 'Στεφανία', distractors: ['Ελένη Φουρέιρα', 'Τάμτα', 'Demy'], tier: 4 },
+  { text: 'Πώς λέγεται το τραγούδι της Στεφανίας (2021);', correct: 'Last Dance', distractors: ['Supergirl', 'Zari', 'My Number One'], tier: 4 },
+];
+
 const WORD_PROBLEMS: Record<WorldId, WordProblemTemplate[]> = {
   beauty: [
     { text: 'Η Μαρία βάφει 4 νύχια σε κάθε χέρι. Έχει 2 χέρια. Πόσα νύχια έβαψε;', answer: 8, operation: 'multiplication', tier: 1 },
@@ -181,7 +248,27 @@ export function generateQuestions(worldId: WorldId, tier: number, count: number 
   const worldProblems = WORD_PROBLEMS[worldId].filter(p => p.tier <= tier);
   const questions: Question[] = [];
 
-  const wordProblemCount = Math.min(Math.floor(count * 0.4), worldProblems.length);
+  // For Eurovision world, mix trivia questions with math
+  if (worldId === 'eurovision') {
+    const triviaPool = EUROVISION_TRIVIA.filter(t => t.tier <= tier);
+    const triviaCount = Math.min(Math.ceil(count * 0.5), triviaPool.length);
+    const selectedTrivia = shuffleArray(triviaPool).slice(0, triviaCount);
+
+    for (const t of selectedTrivia) {
+      const textOptions = shuffleArray([t.correct, ...t.distractors]);
+      questions.push({
+        text: t.text,
+        correctAnswer: 0,
+        options: [],
+        operation: 'trivia',
+        tier: t.tier,
+        textOptions,
+        correctTextAnswer: t.correct,
+      });
+    }
+  }
+
+  const wordProblemCount = Math.min(Math.floor((count - questions.length) * 0.4), worldProblems.length);
   const selectedWordProblems = shuffleArray(worldProblems).slice(0, wordProblemCount);
 
   for (const wp of selectedWordProblems) {

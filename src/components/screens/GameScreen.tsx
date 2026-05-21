@@ -28,7 +28,7 @@ export function GameScreen() {
   const [hearts, setHearts] = useState(3);
   const [correct, setCorrect] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [answered, setAnswered] = useState<number | null>(null);
+  const [answered, setAnswered] = useState<number | string | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [startTime] = useState(Date.now());
 
@@ -40,13 +40,16 @@ export function GameScreen() {
     }
   }, [currentWorld, state.progress.currentTier, playBgMusic]);
 
-  const handleAnswer = useCallback((selected: number) => {
+  const handleAnswer = useCallback((selected: number | string) => {
     if (answered !== null) return;
     const question = questions[currentQ];
     if (!question) return;
 
     setAnswered(selected);
-    const isCorrect = selected === question.correctAnswer;
+    const isTrivia = question.operation === 'trivia';
+    const isCorrect = isTrivia
+      ? selected === question.correctTextAnswer
+      : selected === question.correctAnswer;
 
     if (isCorrect) {
       playSfx('correct');
@@ -214,9 +217,12 @@ export function GameScreen() {
         flex: 1,
         alignContent: 'start',
       }}>
-        {question.options.map((option, i) => {
+        {(question.textOptions || question.options).map((option, i) => {
+          const isTrivia = question.operation === 'trivia';
           const isSelected = answered === option;
-          const isCorrectAnswer = option === question.correctAnswer;
+          const isCorrectAnswer = isTrivia
+            ? option === question.correctTextAnswer
+            : option === question.correctAnswer;
           const showResult = answered !== null;
 
           let bg = ANSWER_COLORS[i];
@@ -237,21 +243,21 @@ export function GameScreen() {
 
           return (
             <motion.button
-              key={option}
+              key={String(option)}
               onClick={() => handleAnswer(option)}
               whileTap={answered === null ? { scale: 0.93 } : {}}
               whileHover={answered === null ? { scale: 1.03, boxShadow: `0 0 20px ${world.colors.primary}40` } : {}}
               animate={showResult && isSelected && !isCorrectAnswer ? { x: [0, -5, 5, -5, 5, 0] } : {}}
               transition={{ duration: 0.4 }}
               style={{
-                padding: '20px',
+                padding: isTrivia ? '14px 10px' : '20px',
                 borderRadius: 'var(--radius-md)',
                 background: bg,
                 border: `2px solid ${borderColor}`,
                 boxShadow: shadow,
                 color: 'white',
-                fontSize: '22px',
-                fontFamily: 'var(--font-numbers)',
+                fontSize: isTrivia ? '15px' : '22px',
+                fontFamily: isTrivia ? 'var(--font-body)' : 'var(--font-numbers)',
                 fontWeight: 600,
                 cursor: answered === null ? 'pointer' : 'default',
                 backdropFilter: 'blur(10px)',
@@ -259,6 +265,8 @@ export function GameScreen() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                textAlign: 'center',
+                lineHeight: 1.3,
               }}
             >
               {option}
