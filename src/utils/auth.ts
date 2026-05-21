@@ -1,4 +1,5 @@
 import { UserProfile, GameProgress, GameSettings } from '../types';
+import { scheduleSyncToGist } from './gistSync';
 
 const USERS_KEY = 'asteri-users';
 const ACTIVE_USER_KEY = 'asteri-active-user';
@@ -68,6 +69,7 @@ export async function registerUser(name: string, password: string): Promise<{ su
   };
 
   saveAllUsers(users);
+  scheduleSyncToGist();
   localStorage.setItem(ACTIVE_USER_KEY, trimmedName);
   return { success: true };
 }
@@ -112,6 +114,7 @@ export function saveUserProgress(progress: GameProgress): void {
   if (users[name]) {
     users[name].progress = progress;
     saveAllUsers(users);
+    scheduleSyncToGist();
   }
 }
 
@@ -122,6 +125,7 @@ export function saveUserSettings(settings: GameSettings): void {
   if (users[name]) {
     users[name].settings = settings;
     saveAllUsers(users);
+    scheduleSyncToGist();
   }
 }
 

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import {
   getActiveUser,
   getActiveUserProfile,
@@ -6,11 +6,13 @@ import {
   loginUser,
   logoutUser,
 } from '../utils/auth';
+import { initSync } from '../utils/gistSync';
 import { GameProgress, GameSettings } from '../types';
 
 interface UserContextType {
   currentUser: string | null;
   isAuthenticated: boolean;
+  syncReady: boolean;
   login: (name: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (name: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
@@ -38,6 +40,14 @@ const UserCtx = createContext<UserContextType | null>(null);
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<string | null>(getActiveUser());
+  const [syncReady, setSyncReady] = useState(false);
+
+  useEffect(() => {
+    initSync().then(() => {
+      setCurrentUser(getActiveUser());
+      setSyncReady(true);
+    });
+  }, []);
 
   const login = useCallback(async (name: string, password: string) => {
     const result = await loginUser(name, password);
@@ -74,6 +84,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     <UserCtx.Provider value={{
       currentUser,
       isAuthenticated: currentUser !== null,
+      syncReady,
       login,
       register,
       logout,
