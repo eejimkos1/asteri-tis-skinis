@@ -6,7 +6,7 @@ import { Button } from '../common/Button';
 
 export function WorldMap() {
   const { state, dispatch } = useGame();
-  const { unlockedWorlds, levelResults } = state.progress;
+  const { totalStars, levelResults } = state.progress;
 
   function getWorldProgress(worldId: string): number {
     const completed = Object.keys(levelResults).filter(k => k.startsWith(worldId)).length;
@@ -53,7 +53,7 @@ export function WorldMap() {
         zIndex: 1,
       }}>
         {WORLDS.map((world, i) => {
-          const isUnlocked = unlockedWorlds.includes(world.id);
+          const isUnlocked = totalStars >= world.starsRequired;
           const progress = getWorldProgress(world.id);
 
           return (
@@ -107,7 +107,9 @@ export function WorldMap() {
                     {world.name}
                   </div>
                   <div style={{ fontSize: '12px', opacity: 0.7 }}>
-                    {isUnlocked ? world.description : 'Ξεκλείδωσε τον προηγούμενο κόσμο!'}
+                    {isUnlocked
+                      ? world.description
+                      : `Χρειάζεσαι ${world.starsRequired} ⭐ (έχεις ${totalStars})`}
                   </div>
                   {isUnlocked && progress > 0 && (
                     <div style={{

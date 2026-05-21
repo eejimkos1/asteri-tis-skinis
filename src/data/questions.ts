@@ -3,7 +3,7 @@ import { WorldId, Question } from '../types';
 interface WordProblemTemplate {
   text: string;
   answer: number;
-  operation: 'multiplication' | 'division';
+  operation: 'multiplication' | 'division' | 'addition' | 'subtraction';
   tier: number;
 }
 
@@ -72,6 +72,25 @@ const WORD_PROBLEMS: Record<WorldId, WordProblemTemplate[]> = {
     { text: 'Κάθε smoothie θέλει 8 φράουλες. Φτιάχνεις 6 smoothies. Πόσες φράουλες;', answer: 48, operation: 'multiplication', tier: 3 },
     { text: 'Η βιτρίνα έχει 3 ράφια με 12 κέικ στο καθένα. Πόσα κέικ;', answer: 36, operation: 'multiplication', tier: 4 },
     { text: 'Παραγγέλνουν 72 μπαλόνια για πάρτι σε 9 τραπέζια. Πόσα ανά τραπέζι;', answer: 8, operation: 'division', tier: 4 },
+  ],
+  eurovision: [
+    { text: 'Η Ελλάδα πήρε 12 βαθμούς από 5 χώρες. Πόσοι βαθμοί συνολικά;', answer: 60, operation: 'multiplication', tier: 2 },
+    { text: 'Κάθε χώρα δίνει 10 βαθμούς. 8 χώρες ψήφισαν. Πόσοι βαθμοί;', answer: 80, operation: 'multiplication', tier: 2 },
+    { text: 'Η Nemo πήρε 72 βαθμούς από 6 κριτές. Πόσοι ανά κριτή;', answer: 12, operation: 'division', tier: 3 },
+    { text: 'Το televote έδωσε 4 φορές 12 βαθμούς. Πόσοι βαθμοί;', answer: 48, operation: 'multiplication', tier: 3 },
+    { text: 'Η Marina Satti πήρε 54 βαθμούς από 9 χώρες. Πόσοι ανά χώρα;', answer: 6, operation: 'division', tier: 3 },
+    { text: 'Η κριτική επιτροπή έδωσε 7 βαθμούς από 8 χώρες. Πόσοι συνολικά;', answer: 56, operation: 'multiplication', tier: 3 },
+    { text: 'Η Ελβετία πήρε 365 βαθμούς και η Κροατία 287. Πόση η διαφορά;', answer: 78, operation: 'subtraction', tier: 4 },
+    { text: 'Η κριτική επιτροπή έδωσε 150 βαθμούς και το televote 215. Πόσοι συνολικά;', answer: 365, operation: 'addition', tier: 4 },
+    { text: 'Η Ελλάδα πήρε 126 βαθμούς. Η 10η χώρα πήρε 152. Πόση η διαφορά;', answer: 26, operation: 'subtraction', tier: 3 },
+    { text: 'Κάθε τραγούδι διαρκεί 3 λεπτά. Ακούς 8 τραγούδια. Πόσα λεπτά;', answer: 24, operation: 'multiplication', tier: 2 },
+    { text: 'Η πρόβα έχει 6 τραγούδια × 4 λεπτά. Πόσα λεπτά συνολικά;', answer: 24, operation: 'multiplication', tier: 2 },
+    { text: 'Ο τελικός έχει 26 τραγούδια × 3 λεπτά. Πόσα λεπτά;', answer: 78, operation: 'multiplication', tier: 4 },
+    { text: 'Η Ελλάδα τραγούδησε 3 λεπτά. Η πρόβα ήταν 5 φορές. Πόσα λεπτά πρόβας;', answer: 15, operation: 'multiplication', tier: 2 },
+    { text: 'Η ψηφοφορία διαρκεί 4 γύρους × 12 λεπτά. Πόσα λεπτά;', answer: 48, operation: 'multiplication', tier: 3 },
+    { text: 'Ψήφισαν 36 χώρες σε 6 γκρουπ. Πόσες χώρες ανά γκρουπ;', answer: 6, operation: 'division', tier: 3 },
+    { text: 'Κάθε ημιτελικός έχει 9 λεπτά διαφήμιση × 4 διαλείμματα. Πόσα λεπτά;', answer: 36, operation: 'multiplication', tier: 4 },
+    { text: 'Στον τελικό ψήφισαν 120 εκατομμύρια. Μοιράστηκαν σε 6 ζώνες. Πόσα ανά ζώνη;', answer: 20, operation: 'division', tier: 4 },
   ],
 };
 

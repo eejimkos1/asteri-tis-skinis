@@ -98,7 +98,7 @@ const WORLD_MUSIC_CONFIG: Record<WorldId, {
   tempo: number;
   waveform: OscillatorType;
   bassWave: OscillatorType;
-  style: 'gentle' | 'upbeat' | 'dreamy' | 'jazzy' | 'tropical' | 'stadium' | 'lofi';
+  style: 'gentle' | 'upbeat' | 'dreamy' | 'jazzy' | 'tropical' | 'stadium' | 'lofi' | 'eurovision';
 }> = {
   beauty: {
     scale: [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33],
@@ -148,6 +148,13 @@ const WORLD_MUSIC_CONFIG: Record<WorldId, {
     waveform: 'sine',
     bassWave: 'triangle',
     style: 'lofi',
+  },
+  eurovision: {
+    scale: [329.63, 392.0, 440.0, 493.88, 523.25, 659.25, 783.99],
+    tempo: 235,
+    waveform: 'sawtooth',
+    bassWave: 'square',
+    style: 'eurovision',
   },
 };
 
@@ -225,6 +232,20 @@ export function startBackgroundMusic(worldId: WorldId, volume: number = 0.12): v
       }
       if (beatCount % 8 === 0) {
         createOscillator(ctx, bassWave, scale[0] * 0.5, now, 0.4, volume * 0.5, ctx.destination);
+      }
+    } else if (style === 'eurovision') {
+      if (beatCount % 4 === 0) {
+        createOscillator(ctx, waveform, freq, now, 0.25, volume * 1.5, ctx.destination);
+        createOscillator(ctx, bassWave, scale[0] * 0.5, now, 0.2, volume * 0.9, ctx.destination);
+        createOscillator(ctx, 'square', 1000 + Math.random() * 500, now, 0.03, volume * 0.4, ctx.destination);
+      } else if (beatCount % 4 === 2) {
+        createOscillator(ctx, waveform, freq * 1.25, now, 0.2, volume * 1.2, ctx.destination);
+        createOscillator(ctx, bassWave, scale[2] * 0.5, now, 0.15, volume * 0.6, ctx.destination);
+      } else {
+        createOscillator(ctx, 'square', 1200 + Math.random() * 600, now, 0.04, volume * 0.35, ctx.destination);
+      }
+      if (beatCount % 8 === 0) {
+        createOscillator(ctx, 'sine', freq * 2, now, 0.4, volume * 0.5, ctx.destination);
       }
     }
 

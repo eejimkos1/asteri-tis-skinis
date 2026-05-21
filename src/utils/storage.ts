@@ -1,13 +1,12 @@
 import { GameProgress, GameSettings, WorldId } from '../types';
-
-const PROGRESS_KEY = 'asteri-progress';
-const SETTINGS_KEY = 'asteri-settings';
+import { getActiveUserProfile, saveUserProgress, saveUserSettings } from './auth';
+import { WORLDS } from '../data/worlds';
 
 const DEFAULT_PROGRESS: GameProgress = {
   totalStars: 0,
   currentTier: 1,
   tierAccuracy: [],
-  unlockedWorlds: ['beauty'],
+  unlockedWorlds: ['beauty', 'dance', 'singing', 'chocolate'],
   levelResults: {},
   unlockedRewards: [],
   danceStreaks: 0,
@@ -20,37 +19,42 @@ const DEFAULT_SETTINGS: GameSettings = {
 };
 
 export function loadProgress(): GameProgress {
-  try {
-    const data = localStorage.getItem(PROGRESS_KEY);
-    if (data) return { ...DEFAULT_PROGRESS, ...JSON.parse(data) };
-  } catch { /* corrupted data */ }
+  const profile = getActiveUserProfile();
+  if (profile) {
+    return { ...DEFAULT_PROGRESS, ...profile.progress };
+  }
   return { ...DEFAULT_PROGRESS };
 }
 
 export function saveProgress(progress: GameProgress): void {
-  localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+  saveUserProgress(progress);
 }
 
 export function loadSettings(): GameSettings {
-  try {
-    const data = localStorage.getItem(SETTINGS_KEY);
-    if (data) return { ...DEFAULT_SETTINGS, ...JSON.parse(data) };
-  } catch { /* corrupted data */ }
+  const profile = getActiveUserProfile();
+  if (profile) {
+    return { ...DEFAULT_SETTINGS, ...profile.settings };
+  }
   return { ...DEFAULT_SETTINGS };
 }
 
 export function saveSettings(settings: GameSettings): void {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  saveUserSettings(settings);
 }
 
 export function resetProgress(): void {
-  localStorage.removeItem(PROGRESS_KEY);
+  saveUserProgress({ ...DEFAULT_PROGRESS });
 }
 
 export function getNextWorld(currentWorlds: WorldId[]): WorldId | null {
-  const order: WorldId[] = ['beauty', 'dance', 'singing', 'chocolate', 'parrots', 'aek', 'coffee'];
-  for (const world of order) {
-    if (!currentWorlds.includes(world)) return world;
+  for (const world of WORLDS) {
+    if (!currentWorlds.includes(world.id)) return world.id;
   }
   return null;
+}
+
+export function getUnlockedWorlds(totalStars: number): WorldId[] {
+  return WORLDS
+    .filter(w => totalStars >= w.starsRequired)
+    .map(w => w.id);
 }

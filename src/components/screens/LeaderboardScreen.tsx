@@ -1,41 +1,14 @@
 import { motion } from 'framer-motion';
 import { useGame } from '../../context/GameContext';
+import { useUser } from '../../context/UserContext';
+import { getLeaderboardData } from '../../utils/auth';
 import { Button } from '../common/Button';
 import { FloatingElements } from '../common/FloatingElements';
 
-interface LeaderboardEntry {
-  name: string;
-  stars: number;
-  date: string;
-}
-
-function getLeaderboard(): LeaderboardEntry[] {
-  try {
-    const data = localStorage.getItem('asteri-leaderboard');
-    if (data) return JSON.parse(data);
-  } catch { /* empty */ }
-  return [];
-}
-
-export function updateLeaderboard(name: string, stars: number): void {
-  const entries = getLeaderboard();
-  const existing = entries.findIndex(e => e.name === name);
-
-  if (existing >= 0) {
-    entries[existing].stars = Math.max(entries[existing].stars, stars);
-    entries[existing].date = new Date().toLocaleDateString('el-GR');
-  } else {
-    entries.push({ name, stars, date: new Date().toLocaleDateString('el-GR') });
-  }
-
-  entries.sort((a, b) => b.stars - a.stars);
-  localStorage.setItem('asteri-leaderboard', JSON.stringify(entries.slice(0, 10)));
-}
-
 export function LeaderboardScreen() {
   const { dispatch } = useGame();
-  const entries = getLeaderboard();
-  const playerName = localStorage.getItem('asteri-player-name') || 'Σταρ';
+  const { currentUser } = useUser();
+  const entries = getLeaderboardData();
 
   const medals = ['🥇', '🥈', '🥉'];
 
@@ -65,7 +38,7 @@ export function LeaderboardScreen() {
           zIndex: 1,
         }}
       >
-        Πίνακας Πρωταθλητών 🏆
+        Κατάταξη 🏆
       </motion.h1>
 
       <div style={{
@@ -90,7 +63,7 @@ export function LeaderboardScreen() {
         ) : (
           entries.map((entry, i) => (
             <motion.div
-              key={entry.name + i}
+              key={entry.name}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.1 }}
@@ -100,10 +73,10 @@ export function LeaderboardScreen() {
                 gap: '12px',
                 padding: '14px 18px',
                 borderRadius: 'var(--radius-md)',
-                background: entry.name === playerName
+                background: entry.name === currentUser
                   ? 'linear-gradient(135deg, rgba(255, 107, 157, 0.3), rgba(196, 79, 226, 0.3))'
                   : 'rgba(255, 255, 255, 0.08)',
-                border: entry.name === playerName
+                border: entry.name === currentUser
                   ? '1px solid rgba(255, 107, 157, 0.5)'
                   : '1px solid rgba(255, 255, 255, 0.1)',
                 backdropFilter: 'blur(10px)',
@@ -115,16 +88,18 @@ export function LeaderboardScreen() {
               <span style={{ flex: 1, fontWeight: 600, fontSize: '15px' }}>
                 {entry.name}
               </span>
-              <span style={{
-                fontFamily: 'var(--font-numbers)',
-                fontSize: '16px',
-                color: '#FFD700',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-              }}>
-                {entry.stars} ⭐
-              </span>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                <span style={{
+                  fontFamily: 'var(--font-numbers)',
+                  fontSize: '16px',
+                  color: '#FFD700',
+                }}>
+                  {entry.stars} ⭐
+                </span>
+                <span style={{ fontSize: '11px', opacity: 0.6 }}>
+                  {entry.accuracy}% ακρίβεια
+                </span>
+              </div>
             </motion.div>
           ))
         )}

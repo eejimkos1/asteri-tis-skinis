@@ -1,13 +1,19 @@
 import { motion } from 'framer-motion';
 import { useGame } from '../../context/GameContext';
+import { useUser } from '../../context/UserContext';
 import { Button } from '../common/Button';
 import { Avatar } from '../common/Avatar';
 import { FloatingElements } from '../common/FloatingElements';
 
 export function HomeScreen() {
   const { state, dispatch } = useGame();
+  const { currentUser, logout } = useUser();
   const { totalStars } = state.progress;
-  const playerName = localStorage.getItem('asteri-player-name') || 'Σταρ';
+
+  const handleLogout = () => {
+    logout();
+    dispatch({ type: 'SET_SCREEN', screen: 'auth' });
+  };
 
   return (
     <div style={{
@@ -75,7 +81,7 @@ export function HomeScreen() {
           zIndex: 1,
         }}
       >
-        Γεια σου, {playerName}! ✨
+        Γεια σου, {currentUser || 'Σταρ'}! ✨
       </motion.p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', zIndex: 1, width: '100%', maxWidth: '280px' }}>
@@ -86,11 +92,14 @@ export function HomeScreen() {
           Τα Βραβεία μου 🏆
         </Button>
         <div style={{ display: 'flex', gap: '12px' }}>
+          <Button onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'leaderboard' })} variant="secondary" size="small">
+            🏅
+          </Button>
           <Button onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'settings' })} variant="secondary" size="small">
             ⚙️
           </Button>
-          <Button onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'leaderboard' })} variant="secondary" size="small">
-            🏅
+          <Button onClick={handleLogout} variant="secondary" size="small">
+            🚪
           </Button>
         </div>
       </div>

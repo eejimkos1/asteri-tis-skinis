@@ -9,7 +9,6 @@ import { Hearts } from '../common/Hearts';
 import { Confetti } from '../common/Confetti';
 import { FloatingElements } from '../common/FloatingElements';
 import { MusicToggle } from '../common/MusicToggle';
-import { updateLeaderboard } from './LeaderboardScreen';
 
 const ANSWER_COLORS = [
   'rgba(255, 107, 157, 0.25)',
@@ -85,9 +84,6 @@ export function GameScreen() {
     }
 
     playSfx('levelComplete');
-
-    const playerName = localStorage.getItem('asteri-player-name') || 'Σταρ';
-    updateLeaderboard(playerName, state.progress.totalStars + stars);
 
     dispatch({
       type: 'COMPLETE_LEVEL',

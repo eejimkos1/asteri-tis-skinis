@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { GameProvider, useGame } from './context/GameContext';
 import { AudioProvider } from './context/AudioContext';
+import { UserProvider, useUser } from './context/UserContext';
 import { SplashScreen } from './components/screens/SplashScreen';
-import { NameEntryScreen } from './components/screens/NameEntryScreen';
+import { AuthScreen } from './components/screens/AuthScreen';
 import { HomeScreen } from './components/screens/HomeScreen';
 import { WorldMap } from './components/screens/WorldMap';
 import { LevelSelect } from './components/screens/LevelSelect';
@@ -18,7 +19,7 @@ function GameRouter() {
 
   const screens: Record<string, JSX.Element> = {
     splash: <SplashScreen />,
-    nameEntry: <NameEntryScreen />,
+    auth: <AuthScreen />,
     home: <HomeScreen />,
     worldMap: <WorldMap />,
     levelSelect: <LevelSelect />,
@@ -48,16 +49,14 @@ function GameRouter() {
 
 function AppWithContext() {
   const { state } = useGame();
+  const { isAuthenticated } = useUser();
 
-  // On first load, check if player has entered their name
   if (state.screen === 'splash') {
     return <SplashScreen />;
   }
 
-  // After splash, check if name exists
-  const hasName = localStorage.getItem('asteri-player-name');
-  if (!hasName && state.screen === 'home') {
-    return <NameEntryScreen />;
+  if (!isAuthenticated && state.screen !== 'auth') {
+    return <AuthScreen />;
   }
 
   return <GameRouter />;
@@ -65,10 +64,12 @@ function AppWithContext() {
 
 export default function App() {
   return (
-    <GameProvider>
-      <AudioProvider>
-        <AppWithContext />
-      </AudioProvider>
-    </GameProvider>
+    <UserProvider>
+      <GameProvider>
+        <AudioProvider>
+          <AppWithContext />
+        </AudioProvider>
+      </GameProvider>
+    </UserProvider>
   );
 }

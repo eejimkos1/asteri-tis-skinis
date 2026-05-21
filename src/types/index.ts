@@ -1,8 +1,10 @@
-export type WorldId = 'beauty' | 'dance' | 'singing' | 'chocolate' | 'parrots' | 'aek' | 'coffee';
+export type SubjectCategory = 'math' | 'language' | 'history' | 'science';
+
+export type WorldId = 'beauty' | 'dance' | 'singing' | 'chocolate' | 'parrots' | 'aek' | 'coffee' | 'eurovision';
 
 export type Screen =
   | 'splash'
-  | 'nameEntry'
+  | 'auth'
   | 'home'
   | 'worldMap'
   | 'levelSelect'
@@ -15,7 +17,7 @@ export type Screen =
 
 export type DanceMove = 'spin' | 'jump' | 'clap' | 'kick' | 'wave';
 
-export type MathOperation = 'multiplication' | 'division';
+export type MathOperation = 'multiplication' | 'division' | 'addition' | 'subtraction';
 
 export interface Question {
   text: string;
@@ -28,9 +30,9 @@ export interface Question {
 export interface DanceSequence {
   moves: DanceMove[];
   targetMove: DanceMove;
-  speed: number; // ms per move
+  speed: number;
   correctCount: number;
-  multiplier?: number; // for harder versions: "she did it X times"
+  multiplier?: number;
 }
 
 export interface LevelResult {
@@ -47,6 +49,8 @@ export interface WorldConfig {
   name: string;
   icon: string;
   description: string;
+  subject: SubjectCategory;
+  starsRequired: number;
   colors: {
     primary: string;
     secondary: string;
@@ -79,4 +83,10 @@ export interface GameSettings {
   musicEnabled: boolean;
   sfxEnabled: boolean;
   volume: number;
+}
+
+export interface UserProfile {
+  passwordHash: string;
+  progress: GameProgress;
+  settings: GameSettings;
 }

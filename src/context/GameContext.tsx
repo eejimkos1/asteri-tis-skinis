@@ -1,6 +1,6 @@
 import { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { GameProgress, GameSettings, Screen, WorldId, LevelResult } from '../types';
-import { loadProgress, saveProgress, loadSettings, saveSettings, getNextWorld } from '../utils/storage';
+import { loadProgress, saveProgress, loadSettings, saveSettings, getUnlockedWorlds } from '../utils/storage';
 import { REWARDS } from '../data/rewards';
 
 interface GameState {
@@ -20,7 +20,8 @@ type GameAction =
   | { type: 'COMPLETE_DANCE'; correct: boolean }
   | { type: 'UPDATE_TIER'; tier: number }
   | { type: 'UPDATE_SETTINGS'; settings: Partial<GameSettings> }
-  | { type: 'RESET_PROGRESS' };
+  | { type: 'RESET_PROGRESS' }
+  | { type: 'LOAD_USER' };
 
 function checkNewRewards(totalStars: number, currentRewards: string[]): string[] {
   const newRewards = [...currentRewards];
@@ -36,6 +37,13 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'SET_SCREEN':
       return { ...state, screen: action.screen };
+
+    case 'LOAD_USER':
+      return {
+        ...state,
+        progress: loadProgress(),
+        settings: loadSettings(),
+      };
 
     case 'SELECT_WORLD':
       return { ...state, currentWorld: action.worldId, screen: 'levelSelect' };
@@ -58,13 +66,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const newTotalStars = state.progress.totalStars + starGain;
       const newResults = { ...state.progress.levelResults, [key]: result };
       const newRewards = checkNewRewards(newTotalStars, state.progress.unlockedRewards);
-
-      let newUnlockedWorlds = [...state.progress.unlockedWorlds];
-      const worldLevelsDone = Object.keys(newResults).filter(k => k.startsWith(result.worldId)).length;
-      if (worldLevelsDone >= 5) {
-        const next = getNextWorld(newUnlockedWorlds);
-        if (next) newUnlockedWorlds.push(next);
-      }
+      const newUnlockedWorlds = getUnlockedWorlds(newTotalStars);
 
       return {
         ...state,
@@ -74,7 +76,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           totalStars: newTotalStars,
           levelResults: newResults,
           unlockedRewards: newRewards,
-          unlockedWorlds: newUnlockedWorlds as WorldId[],
+          unlockedWorlds: newUnlockedWorlds,
         },
       };
     }
@@ -82,17 +84,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     case 'COMPLETE_DANCE': {
       const starGain = action.correct ? 1 : 0;
       const newStreaks = action.correct ? state.progress.danceStreaks + 1 : 0;
+      const newTotalStars = state.progress.totalStars + starGain;
       return {
         ...state,
         screen: 'results',
         progress: {
           ...state.progress,
-          totalStars: state.progress.totalStars + starGain,
+          totalStars: newTotalStars,
           danceStreaks: newStreaks,
-          unlockedRewards: checkNewRewards(
-            state.progress.totalStars + starGain,
-            state.progress.unlockedRewards
-          ),
+          unlockedRewards: checkNewRewards(newTotalStars, state.progress.unlockedRewards),
+          unlockedWorlds: getUnlockedWorlds(newTotalStars),
         },
       };
     }
@@ -115,7 +116,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           totalStars: 0,
           currentTier: 1,
           tierAccuracy: [],
-          unlockedWorlds: ['beauty'],
+          unlockedWorlds: ['beauty', 'dance', 'singing', 'chocolate'],
           levelResults: {},
           unlockedRewards: [],
           danceStreaks: 0,

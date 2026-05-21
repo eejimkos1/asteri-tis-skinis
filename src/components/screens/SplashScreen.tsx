@@ -11,7 +11,7 @@ export function SplashScreen() {
       setProgress(p => {
         if (p >= 100) {
           clearInterval(interval);
-          setTimeout(() => dispatch({ type: 'SET_SCREEN', screen: 'home' }), 500);
+          setTimeout(() => dispatch({ type: 'SET_SCREEN', screen: 'auth' }), 500);
           return 100;
         }
         return p + 2;
