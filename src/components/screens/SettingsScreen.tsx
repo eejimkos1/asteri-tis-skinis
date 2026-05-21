@@ -3,16 +3,45 @@ import { useGame } from '../../context/GameContext';
 import { Button } from '../common/Button';
 import { resetProgress } from '../../utils/storage';
 import { useState } from 'react';
+import { getGistConfig, setGistConfig, readGist } from '../../utils/gistApi';
 
 export function SettingsScreen() {
   const { state, dispatch } = useGame();
   const { musicEnabled, sfxEnabled, volume } = state.settings;
   const [showReset, setShowReset] = useState(false);
+  const [tapCount, setTapCount] = useState(0);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [gistToken, setGistToken] = useState(getGistConfig()?.token || '');
+  const [gistId, setGistId] = useState(getGistConfig()?.gistId || '');
+  const [adminMsg, setAdminMsg] = useState('');
 
   const handleReset = () => {
     resetProgress();
     dispatch({ type: 'RESET_PROGRESS' });
     setShowReset(false);
+  };
+
+  const handleVersionTap = () => {
+    const next = tapCount + 1;
+    setTapCount(next);
+    if (next >= 5) {
+      setShowAdmin(true);
+      setTapCount(0);
+    }
+  };
+
+  const handleSaveGist = async () => {
+    if (!gistToken.trim() || !gistId.trim()) {
+      setAdminMsg('Συμπλήρωσε και τα δύο πεδία!');
+      return;
+    }
+    setGistConfig(gistToken.trim(), gistId.trim());
+    const result = await readGist({ token: gistToken.trim(), gistId: gistId.trim() });
+    if (result.success) {
+      setAdminMsg('Σύνδεση επιτυχής! ✅');
+    } else {
+      setAdminMsg(`Σφάλμα: ${result.error}`);
+    }
   };
 
   return (
@@ -174,11 +203,79 @@ export function SettingsScreen() {
         )}
       </div>
 
-      <div style={{ marginTop: 'auto' }}>
+      <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
         <Button onClick={() => dispatch({ type: 'SET_SCREEN', screen: 'home' })} variant="secondary" size="medium">
           Πίσω 🔙
         </Button>
+        <span
+          onClick={handleVersionTap}
+          style={{ fontSize: '11px', opacity: 0.3, cursor: 'default', userSelect: 'none' }}
+        >
+          v1.2.0
+        </span>
       </div>
+
+      {showAdmin && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.9)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '30px',
+            zIndex: 9999,
+            gap: '16px',
+          }}
+        >
+          <h2 style={{ color: '#FFD700', fontSize: '18px' }}>Cloud Sync Setup</h2>
+          <input
+            type="password"
+            placeholder="GitHub Token (ghp_...)"
+            value={gistToken}
+            onChange={e => setGistToken(e.target.value)}
+            style={{
+              width: '100%',
+              maxWidth: '300px',
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid rgba(255,255,255,0.2)',
+              background: 'rgba(255,255,255,0.1)',
+              color: 'white',
+              fontSize: '14px',
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Gist ID"
+            value={gistId}
+            onChange={e => setGistId(e.target.value)}
+            style={{
+              width: '100%',
+              maxWidth: '300px',
+              padding: '12px',
+              borderRadius: '8px',
+              border: '1px solid rgba(255,255,255,0.2)',
+              background: 'rgba(255,255,255,0.1)',
+              color: 'white',
+              fontSize: '14px',
+            }}
+          />
+          {adminMsg && <p style={{ color: adminMsg.includes('✅') ? '#4CAF50' : '#FF5252', fontSize: '13px' }}>{adminMsg}</p>}
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <Button onClick={handleSaveGist} variant="primary" size="small">
+              Test & Save
+            </Button>
+            <Button onClick={() => setShowAdmin(false)} variant="secondary" size="small">
+              Close
+            </Button>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }

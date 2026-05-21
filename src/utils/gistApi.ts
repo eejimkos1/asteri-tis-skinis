@@ -1,6 +1,8 @@
 import { UserProfile } from '../types';
 
 const GIST_FILE_NAME = 'asteri-users.json';
+const CONFIG_TOKEN_KEY = 'asteri-gist-token';
+const CONFIG_ID_KEY = 'asteri-gist-id';
 
 export interface GistConfig {
   gistId: string;
@@ -14,10 +16,20 @@ interface GistResult<T> {
 }
 
 export function getGistConfig(): GistConfig | null {
-  const token = import.meta.env.VITE_GIST_TOKEN;
-  const gistId = import.meta.env.VITE_GIST_ID;
+  const token = localStorage.getItem(CONFIG_TOKEN_KEY);
+  const gistId = localStorage.getItem(CONFIG_ID_KEY);
   if (!token || !gistId) return null;
   return { token, gistId };
+}
+
+export function setGistConfig(token: string, gistId: string): void {
+  localStorage.setItem(CONFIG_TOKEN_KEY, token);
+  localStorage.setItem(CONFIG_ID_KEY, gistId);
+}
+
+export function clearGistConfig(): void {
+  localStorage.removeItem(CONFIG_TOKEN_KEY);
+  localStorage.removeItem(CONFIG_ID_KEY);
 }
 
 export async function readGist(config: GistConfig): Promise<GistResult<Record<string, UserProfile>>> {
