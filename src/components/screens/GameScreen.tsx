@@ -11,10 +11,10 @@ import { FloatingElements } from '../common/FloatingElements';
 import { MusicToggle } from '../common/MusicToggle';
 
 const ANSWER_COLORS = [
-  'rgba(255, 107, 157, 0.25)',
-  'rgba(157, 107, 255, 0.25)',
-  'rgba(107, 200, 255, 0.25)',
-  'rgba(255, 200, 107, 0.25)',
+  'rgba(255, 107, 157, 0.2)',
+  'rgba(157, 107, 255, 0.2)',
+  'rgba(107, 200, 255, 0.2)',
+  'rgba(255, 200, 107, 0.2)',
 ];
 
 export function GameScreen() {
@@ -114,7 +114,7 @@ export function GameScreen() {
       overflow: 'hidden',
       padding: '16px',
     }}>
-      <FloatingElements elements={world.floatingElements} count={8} />
+      <FloatingElements elements={world.floatingElements} count={10} />
       <Confetti active={showConfetti} />
 
       {/* Top bar */}
@@ -130,8 +130,13 @@ export function GameScreen() {
           {streak >= 3 && (
             <motion.span
               initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              style={{ fontSize: '14px', color: '#FFD700' }}
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 0.6, repeat: Infinity }}
+              style={{
+                fontSize: '16px',
+                color: '#FFD700',
+                animation: 'fireGlow 1s ease infinite',
+              }}
             >
               🔥{streak}
             </motion.span>
@@ -149,8 +154,10 @@ export function GameScreen() {
         zIndex: 1,
       }}>
         {Array.from({ length: 10 }).map((_, i) => (
-          <div
+          <motion.div
             key={i}
+            animate={i === currentQ ? { scale: [1, 1.4, 1], boxShadow: [`0 0 4px ${world.colors.primary}`, `0 0 12px ${world.colors.primary}`, `0 0 4px ${world.colors.primary}`] } : {}}
+            transition={i === currentQ ? { duration: 1.2, repeat: Infinity } : {}}
             style={{
               width: '10px',
               height: '10px',
@@ -159,7 +166,8 @@ export function GameScreen() {
                 ? 'var(--color-success)'
                 : i === currentQ
                   ? world.colors.primary
-                  : 'rgba(255, 255, 255, 0.2)',
+                  : 'rgba(255, 255, 255, 0.15)',
+              boxShadow: i < currentQ ? '0 0 6px var(--color-success)' : 'none',
               transition: 'all 0.3s',
             }}
           />
@@ -179,10 +187,10 @@ export function GameScreen() {
             backdropFilter: 'blur(20px)',
             borderRadius: 'var(--radius-lg)',
             padding: '24px',
-            border: `1px solid ${world.colors.primary}40`,
+            border: `2px solid ${world.colors.primary}50`,
             marginBottom: '24px',
             zIndex: 1,
-            boxShadow: `0 8px 32px ${world.colors.primary}20`,
+            boxShadow: `0 8px 32px ${world.colors.primary}25, inset 0 0 20px ${world.colors.primary}10, 0 0 15px ${world.colors.primary}15`,
           }}
         >
           <p style={{
@@ -213,14 +221,17 @@ export function GameScreen() {
 
           let bg = ANSWER_COLORS[i];
           let borderColor = 'rgba(255, 255, 255, 0.15)';
+          let shadow = 'none';
 
           if (showResult) {
             if (isCorrectAnswer) {
               bg = 'rgba(0, 230, 118, 0.3)';
               borderColor = '#00E676';
+              shadow = '0 0 20px rgba(0, 230, 118, 0.4)';
             } else if (isSelected && !isCorrectAnswer) {
               bg = 'rgba(255, 82, 82, 0.3)';
               borderColor = '#FF5252';
+              shadow = '0 0 15px rgba(255, 82, 82, 0.3)';
             }
           }
 
@@ -228,7 +239,8 @@ export function GameScreen() {
             <motion.button
               key={option}
               onClick={() => handleAnswer(option)}
-              whileTap={answered === null ? { scale: 0.95 } : {}}
+              whileTap={answered === null ? { scale: 0.93 } : {}}
+              whileHover={answered === null ? { scale: 1.03, boxShadow: `0 0 20px ${world.colors.primary}40` } : {}}
               animate={showResult && isSelected && !isCorrectAnswer ? { x: [0, -5, 5, -5, 5, 0] } : {}}
               transition={{ duration: 0.4 }}
               style={{
@@ -236,6 +248,7 @@ export function GameScreen() {
                 borderRadius: 'var(--radius-md)',
                 background: bg,
                 border: `2px solid ${borderColor}`,
+                boxShadow: shadow,
                 color: 'white',
                 fontSize: '22px',
                 fontFamily: 'var(--font-numbers)',
@@ -267,6 +280,7 @@ export function GameScreen() {
               color: '#FFB6C1',
               marginTop: '12px',
               zIndex: 1,
+              textShadow: '0 0 8px rgba(255, 182, 193, 0.3)',
             }}
           >
             Δεν πειράζει! Προσπάθησε ξανά! 💪

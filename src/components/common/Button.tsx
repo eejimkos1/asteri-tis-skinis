@@ -34,20 +34,23 @@ export function Button({ children, onClick, variant = 'primary', size = 'medium'
 
   const variantStyles: Record<string, React.CSSProperties> = {
     primary: {
-      background: 'linear-gradient(135deg, var(--color-primary-start), var(--color-primary-end))',
+      background: 'linear-gradient(135deg, #FF6B9D, #C44FE2, #FF6B9D)',
+      backgroundSize: '200% 200%',
+      animation: 'gradientShift 4s ease infinite',
       color: 'white',
-      boxShadow: '0 4px 15px rgba(255, 107, 157, 0.4)',
+      boxShadow: '0 4px 20px rgba(255, 107, 157, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
     },
     secondary: {
-      background: 'rgba(255, 255, 255, 0.15)',
+      background: 'rgba(255, 255, 255, 0.12)',
       color: 'white',
       backdropFilter: 'blur(10px)',
-      border: '1px solid rgba(255, 255, 255, 0.2)',
+      border: '1px solid rgba(255, 255, 255, 0.25)',
+      boxShadow: '0 2px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
     },
     answer: {
       background: color || 'rgba(255, 255, 255, 0.12)',
       color: 'white',
-      boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
+      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
       width: '100%',
       minHeight: '60px',
       fontSize: '18px',
@@ -59,10 +62,27 @@ export function Button({ children, onClick, variant = 'primary', size = 'medium'
     <motion.button
       onClick={disabled ? undefined : onClick}
       style={{ ...baseStyle, ...sizeStyles[size], ...variantStyles[variant] }}
-      whileTap={disabled ? {} : { scale: 0.95 }}
-      whileHover={disabled ? {} : { scale: 1.02 }}
+      whileTap={disabled ? {} : { scale: 0.93 }}
+      whileHover={disabled ? {} : {
+        scale: 1.03,
+        boxShadow: variant === 'primary'
+          ? '0 6px 30px rgba(255, 107, 157, 0.7), 0 0 40px rgba(196, 79, 226, 0.3)'
+          : '0 4px 20px rgba(255, 255, 255, 0.15)',
+      }}
       transition={{ type: 'spring', stiffness: 400, damping: 17 }}
     >
+      {variant === 'primary' && !disabled && (
+        <span style={{
+          position: 'absolute',
+          top: 0,
+          left: '-100%',
+          width: '60%',
+          height: '100%',
+          background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
+          animation: 'btnShine 3s ease-in-out infinite',
+          pointerEvents: 'none',
+        }} />
+      )}
       {children}
     </motion.button>
   );

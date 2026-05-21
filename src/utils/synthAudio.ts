@@ -84,77 +84,152 @@ export function playButtonSound(): void {
   createOscillator(ctx, 'sine', 800, now + 0.03, 0.06, 0.1, ctx.destination);
 }
 
-// --- BACKGROUND MUSIC GENERATOR ---
+// --- MULTI-LAYER BACKGROUND MUSIC ENGINE ---
 
-interface MusicLoop {
-  intervalId: number | null;
+interface MusicEngine {
+  intervalIds: number[];
   isPlaying: boolean;
 }
 
-let currentLoop: MusicLoop = { intervalId: null, isPlaying: false };
+let engine: MusicEngine = { intervalIds: [], isPlaying: false };
 
-const WORLD_MUSIC_CONFIG: Record<WorldId, {
-  scale: number[];
-  tempo: number;
-  waveform: OscillatorType;
+function createNoise(
+  ctx: AudioContext,
+  startTime: number,
+  duration: number,
+  gainValue: number,
+  destination: AudioNode,
+  highpass: number = 5000
+): void {
+  const bufferSize = ctx.sampleRate * duration;
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'highpass';
+  filter.frequency.value = highpass;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(gainValue, startTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+  source.connect(filter);
+  filter.connect(gain);
+  gain.connect(destination);
+  source.start(startTime);
+  source.stop(startTime + duration);
+}
+
+interface WorldMusic {
+  bpm: number;
+  melodyWave: OscillatorType;
+  melodyNotes: number[];
   bassWave: OscillatorType;
-  style: 'gentle' | 'upbeat' | 'dreamy' | 'jazzy' | 'tropical' | 'stadium' | 'lofi' | 'eurovision';
-}> = {
+  bassNotes: number[];
+  rhythmPattern: ('kick' | 'snare' | 'hat' | 'rest')[];
+  sparkleWave: OscillatorType;
+  sparkleOctave: number;
+  sparkleProb: number;
+}
+
+const N = {
+  C3: 130.81, D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.0, A3: 220.0, B3: 246.94,
+  C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.0, A4: 440.0, B4: 493.88,
+  C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99, A5: 880.0,
+  Bb3: 233.08, Eb4: 311.13, Ab4: 415.3, Bb4: 466.16,
+  Fs4: 369.99, Cs4: 277.18,
+};
+
+const WORLD_MUSIC: Record<WorldId, WorldMusic> = {
   beauty: {
-    scale: [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33],
-    tempo: 400,
-    waveform: 'sine',
-    bassWave: 'sine',
-    style: 'gentle',
+    bpm: 120,
+    melodyWave: 'sine',
+    melodyNotes: [N.E5, N.G5, N.A5, N.G5, N.E5, N.D5, N.C5, N.D5, N.E5, N.G5, N.C5, N.D5, N.E5, N.C5, N.D5, N.E5],
+    bassWave: 'triangle',
+    bassNotes: [N.C3, N.C3, N.G3, N.G3, N.A3, N.A3, N.F3, N.F3],
+    rhythmPattern: ['kick', 'hat', 'snare', 'hat', 'kick', 'hat', 'snare', 'hat'],
+    sparkleWave: 'sine',
+    sparkleOctave: 3,
+    sparkleProb: 0.3,
   },
   dance: {
-    scale: [329.63, 369.99, 415.3, 493.88, 554.37, 659.25, 739.99],
-    tempo: 250,
-    waveform: 'square',
+    bpm: 130,
+    melodyWave: 'square',
+    melodyNotes: [N.D4, N.F4, N.A4, N.G4, N.F4, N.E4, N.D4, N.C4, N.D4, N.F4, N.G4, N.A4, N.Bb4, N.A4, N.G4, N.F4],
     bassWave: 'sawtooth',
-    style: 'upbeat',
+    bassNotes: [N.D3, N.D3, N.A3, N.A3, N.Bb3, N.Bb3, N.G3, N.A3],
+    rhythmPattern: ['kick', 'hat', 'snare', 'hat', 'kick', 'kick', 'snare', 'hat'],
+    sparkleWave: 'square',
+    sparkleOctave: 2,
+    sparkleProb: 0.2,
   },
   singing: {
-    scale: [293.66, 349.23, 392.0, 440.0, 523.25, 587.33, 659.25],
-    tempo: 350,
-    waveform: 'triangle',
+    bpm: 85,
+    melodyWave: 'sine',
+    melodyNotes: [N.G4, N.B4, N.D5, N.C5, N.B4, N.A4, N.G4, N.A4, N.B4, N.D5, N.E5, N.D5, N.C5, N.B4, N.A4, N.G4],
     bassWave: 'sine',
-    style: 'dreamy',
+    bassNotes: [N.G3, N.G3, N.D3, N.D3, N.E3, N.E3, N.C3, N.D3],
+    rhythmPattern: ['rest', 'rest', 'hat', 'rest', 'rest', 'rest', 'hat', 'rest'],
+    sparkleWave: 'sine',
+    sparkleOctave: 3,
+    sparkleProb: 0.4,
   },
   chocolate: {
-    scale: [261.63, 311.13, 349.23, 392.0, 466.16, 523.25, 622.25],
-    tempo: 380,
-    waveform: 'sine',
+    bpm: 110,
+    melodyWave: 'triangle',
+    melodyNotes: [N.F4, N.A4, N.C5, N.A4, N.F4, N.G4, N.A4, N.G4, N.F4, N.E4, N.F4, N.A4, N.C5, N.D5, N.C5, N.A4],
     bassWave: 'triangle',
-    style: 'jazzy',
+    bassNotes: [N.F3, N.F3, N.C3, N.C3, N.D3, N.D3, N.C3, N.C3],
+    rhythmPattern: ['kick', 'rest', 'hat', 'rest', 'kick', 'rest', 'hat', 'hat'],
+    sparkleWave: 'triangle',
+    sparkleOctave: 3,
+    sparkleProb: 0.35,
   },
   parrots: {
-    scale: [329.63, 392.0, 440.0, 523.25, 587.33, 659.25, 783.99],
-    tempo: 280,
-    waveform: 'triangle',
+    bpm: 95,
+    melodyWave: 'triangle',
+    melodyNotes: [N.E4, N.G4, N.A4, N.B4, N.A4, N.G4, N.E4, N.D4, N.E4, N.G4, N.B4, N.A4, N.G4, N.E4, N.D4, N.E4],
     bassWave: 'sine',
-    style: 'tropical',
+    bassNotes: [N.E3, N.E3, N.B3, N.B3, N.A3, N.A3, N.B3, N.E3],
+    rhythmPattern: ['kick', 'rest', 'rest', 'kick', 'rest', 'snare', 'rest', 'kick'],
+    sparkleWave: 'sine',
+    sparkleOctave: 3,
+    sparkleProb: 0.25,
   },
   aek: {
-    scale: [196.0, 246.94, 293.66, 329.63, 392.0, 440.0, 493.88],
-    tempo: 300,
-    waveform: 'sawtooth',
+    bpm: 140,
+    melodyWave: 'sawtooth',
+    melodyNotes: [N.G4, N.G4, N.B4, N.D5, N.D5, N.C5, N.B4, N.A4, N.G4, N.G4, N.B4, N.D5, N.E5, N.D5, N.C5, N.B4],
     bassWave: 'square',
-    style: 'stadium',
+    bassNotes: [N.G3, N.G3, N.D3, N.D3, N.E3, N.E3, N.D3, N.D3],
+    rhythmPattern: ['kick', 'hat', 'snare', 'hat', 'kick', 'hat', 'snare', 'kick'],
+    sparkleWave: 'sawtooth',
+    sparkleOctave: 2,
+    sparkleProb: 0.15,
   },
   coffee: {
-    scale: [220.0, 261.63, 293.66, 349.23, 392.0, 440.0, 523.25],
-    tempo: 450,
-    waveform: 'sine',
+    bpm: 75,
+    melodyWave: 'sine',
+    melodyNotes: [N.A4, N.C5, N.E5, N.D5, N.C5, N.A4, N.G4, N.A4, N.C5, N.D5, N.E5, N.C5, N.A4, N.G4, N.A4, N.C5],
     bassWave: 'triangle',
-    style: 'lofi',
+    bassNotes: [N.A3, N.A3, N.E3, N.E3, N.F3, N.F3, N.E3, N.E3],
+    rhythmPattern: ['kick', 'rest', 'hat', 'rest', 'snare', 'rest', 'hat', 'rest'],
+    sparkleWave: 'sine',
+    sparkleOctave: 3,
+    sparkleProb: 0.2,
   },
   eurovision: {
-    scale: [329.63, 392.0, 440.0, 493.88, 523.25, 659.25, 783.99],
-    tempo: 235,
-    waveform: 'sawtooth',
+    bpm: 128,
+    melodyWave: 'sawtooth',
+    melodyNotes: [N.E4, N.E4, N.G4, N.A4, N.B4, N.A4, N.G4, N.E4, N.Fs4, N.G4, N.A4, N.B4, N.A4, N.G4, N.Fs4, N.E4],
     bassWave: 'square',
-    style: 'eurovision',
+    bassNotes: [N.E3, N.E3, N.B3, N.B3, N.A3, N.A3, N.B3, N.B3],
+    rhythmPattern: ['kick', 'hat', 'snare', 'hat', 'kick', 'hat', 'snare', 'hat'],
+    sparkleWave: 'sawtooth',
+    sparkleOctave: 2,
+    sparkleProb: 0.25,
   },
 };
 
@@ -162,109 +237,71 @@ export function startBackgroundMusic(worldId: WorldId, volume: number = 0.12): v
   stopBackgroundMusic();
 
   const ctx = getAudioContext();
-  const config = WORLD_MUSIC_CONFIG[worldId];
-  let beatCount = 0;
+  const music = WORLD_MUSIC[worldId];
+  const beatMs = 60000 / music.bpm;
 
-  const playBeat = () => {
-    if (!currentLoop.isPlaying) return;
+  let melodyStep = 0;
+  let bassStep = 0;
+  let rhythmStep = 0;
+
+  const melodyInterval = window.setInterval(() => {
+    if (!engine.isPlaying) return;
     const now = ctx.currentTime;
-    const { scale, waveform, bassWave, style } = config;
-
-    // Melody note
-    const noteIdx = Math.floor(Math.random() * scale.length);
-    const freq = scale[noteIdx];
-
-    if (style === 'upbeat' || style === 'stadium') {
-      // Rhythmic pattern - play on every beat with accents
-      if (beatCount % 4 === 0) {
-        createOscillator(ctx, waveform, freq, now, 0.2, volume * 1.5, ctx.destination);
-        // Bass drum feel
-        createOscillator(ctx, bassWave, scale[0] * 0.5, now, 0.15, volume * 0.8, ctx.destination);
-      } else if (beatCount % 2 === 0) {
-        createOscillator(ctx, waveform, freq * 0.75, now, 0.15, volume, ctx.destination);
-      } else {
-        // Hi-hat feel
-        createOscillator(ctx, 'square', 1200 + Math.random() * 400, now, 0.03, volume * 0.3, ctx.destination);
-      }
-    } else if (style === 'gentle' || style === 'lofi') {
-      // Arpeggiated gentle notes with long decay
-      if (beatCount % 3 === 0) {
-        createOscillator(ctx, waveform, freq, now, 0.6, volume, ctx.destination);
-      }
-      if (beatCount % 6 === 0) {
-        createOscillator(ctx, bassWave, scale[0] * 0.5, now, 0.8, volume * 0.5, ctx.destination);
-      }
-      // Soft sparkle on random beats
-      if (Math.random() > 0.7) {
-        createOscillator(ctx, 'sine', freq * 2, now + 0.1, 0.15, volume * 0.3, ctx.destination);
-      }
-    } else if (style === 'dreamy') {
-      // Layered pads
-      if (beatCount % 4 === 0) {
-        createOscillator(ctx, waveform, freq, now, 1.0, volume * 0.8, ctx.destination);
-        createOscillator(ctx, 'sine', freq * 1.5, now, 0.8, volume * 0.3, ctx.destination);
-      }
-      if (beatCount % 8 === 0) {
-        createOscillator(ctx, bassWave, scale[0], now, 1.2, volume * 0.5, ctx.destination);
-      }
-    } else if (style === 'jazzy') {
-      // Swing feel with chromatic passing tones
-      if (beatCount % 4 === 0 || beatCount % 4 === 2) {
-        createOscillator(ctx, waveform, freq, now, 0.3, volume, ctx.destination);
-      }
-      if (beatCount % 4 === 1) {
-        const passingTone = freq * 1.06; // chromatic
-        createOscillator(ctx, waveform, passingTone, now, 0.15, volume * 0.5, ctx.destination);
-      }
-      if (beatCount % 8 === 0) {
-        createOscillator(ctx, bassWave, scale[0] * 0.5, now, 0.5, volume * 0.6, ctx.destination);
-        createOscillator(ctx, bassWave, scale[2] * 0.5, now + 0.25, 0.3, volume * 0.4, ctx.destination);
-      }
-    } else if (style === 'tropical') {
-      // Bossa nova feel with syncopation
-      if (beatCount % 8 === 0 || beatCount % 8 === 3 || beatCount % 8 === 5) {
-        createOscillator(ctx, waveform, freq, now, 0.25, volume, ctx.destination);
-      }
-      // Marimba-like double hits
-      if (beatCount % 4 === 0) {
-        createOscillator(ctx, 'sine', freq * 2, now, 0.08, volume * 0.6, ctx.destination);
-        createOscillator(ctx, 'sine', freq * 2, now + 0.06, 0.08, volume * 0.4, ctx.destination);
-      }
-      if (beatCount % 8 === 0) {
-        createOscillator(ctx, bassWave, scale[0] * 0.5, now, 0.4, volume * 0.5, ctx.destination);
-      }
-    } else if (style === 'eurovision') {
-      if (beatCount % 4 === 0) {
-        createOscillator(ctx, waveform, freq, now, 0.25, volume * 1.5, ctx.destination);
-        createOscillator(ctx, bassWave, scale[0] * 0.5, now, 0.2, volume * 0.9, ctx.destination);
-        createOscillator(ctx, 'square', 1000 + Math.random() * 500, now, 0.03, volume * 0.4, ctx.destination);
-      } else if (beatCount % 4 === 2) {
-        createOscillator(ctx, waveform, freq * 1.25, now, 0.2, volume * 1.2, ctx.destination);
-        createOscillator(ctx, bassWave, scale[2] * 0.5, now, 0.15, volume * 0.6, ctx.destination);
-      } else {
-        createOscillator(ctx, 'square', 1200 + Math.random() * 600, now, 0.04, volume * 0.35, ctx.destination);
-      }
-      if (beatCount % 8 === 0) {
-        createOscillator(ctx, 'sine', freq * 2, now, 0.4, volume * 0.5, ctx.destination);
-      }
+    const note = music.melodyNotes[melodyStep % music.melodyNotes.length];
+    const dur = (beatMs / 1000) * 0.8;
+    createOscillator(ctx, music.melodyWave, note, now, dur, volume * 1.2, ctx.destination);
+    if (music.sparkleProb > 0 && Math.random() < music.sparkleProb) {
+      createOscillator(ctx, music.sparkleWave, note * music.sparkleOctave, now + dur * 0.3, dur * 0.5, volume * 0.3, ctx.destination);
     }
+    melodyStep++;
+  }, beatMs);
 
-    beatCount++;
-  };
+  const bassInterval = window.setInterval(() => {
+    if (!engine.isPlaying) return;
+    const now = ctx.currentTime;
+    const note = music.bassNotes[bassStep % music.bassNotes.length];
+    const dur = (beatMs * 2 / 1000) * 0.9;
+    createOscillator(ctx, music.bassWave, note, now, dur, volume * 0.8, ctx.destination);
+    bassStep++;
+  }, beatMs * 2);
 
-  currentLoop.isPlaying = true;
-  currentLoop.intervalId = window.setInterval(playBeat, config.tempo);
-  playBeat();
+  const rhythmInterval = window.setInterval(() => {
+    if (!engine.isPlaying) return;
+    const now = ctx.currentTime;
+    const hit = music.rhythmPattern[rhythmStep % music.rhythmPattern.length];
+    if (hit === 'kick') {
+      createOscillator(ctx, 'sine', 60, now, 0.1, volume * 0.7, ctx.destination);
+      createOscillator(ctx, 'sine', 100, now, 0.05, volume * 0.5, ctx.destination);
+    } else if (hit === 'snare') {
+      createNoise(ctx, now, 0.08, volume * 0.4, ctx.destination, 3000);
+      createOscillator(ctx, 'triangle', 200, now, 0.05, volume * 0.3, ctx.destination);
+    } else if (hit === 'hat') {
+      createNoise(ctx, now, 0.03, volume * 0.25, ctx.destination, 8000);
+    }
+    rhythmStep++;
+  }, beatMs / 2);
+
+  const sparkleInterval = window.setInterval(() => {
+    if (!engine.isPlaying) return;
+    if (Math.random() > 0.4) return;
+    const now = ctx.currentTime;
+    const note = music.melodyNotes[Math.floor(Math.random() * music.melodyNotes.length)];
+    createOscillator(ctx, 'sine', note * 2, now, 0.3, volume * 0.2, ctx.destination);
+    if (Math.random() > 0.5) {
+      createOscillator(ctx, 'sine', note * 2.5, now + 0.1, 0.2, volume * 0.12, ctx.destination);
+    }
+  }, beatMs * 4);
+
+  engine.isPlaying = true;
+  engine.intervalIds = [melodyInterval, bassInterval, rhythmInterval, sparkleInterval];
 }
 
 export function stopBackgroundMusic(): void {
-  if (currentLoop.intervalId !== null) {
-    clearInterval(currentLoop.intervalId);
-    currentLoop.intervalId = null;
-  }
-  currentLoop.isPlaying = false;
+  engine.intervalIds.forEach(id => clearInterval(id));
+  engine.intervalIds = [];
+  engine.isPlaying = false;
 }
 
 export function isMusicPlaying(): boolean {
-  return currentLoop.isPlaying;
+  return engine.isPlaying;
 }
