@@ -14,7 +14,9 @@ export function ResultsScreen() {
     ? state.progress.levelResults[`${currentWorld}-${currentLevel}`]
     : null;
 
-  const stars = lastResult?.stars || 0;
+  const stars = isDanceChallenge
+    ? (state.progress.danceStreaks > 0 ? 1 : 0)
+    : (lastResult?.stars || 0);
   const correct = lastResult?.correct || 0;
   const total = lastResult?.total || 10;
   const time = lastResult?.time || 0;

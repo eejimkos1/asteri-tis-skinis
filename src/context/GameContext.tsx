@@ -1,7 +1,8 @@
-import { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useReducer, ReactNode, useEffect, useRef } from 'react';
 import { GameProgress, GameSettings, Screen, WorldId, LevelResult } from '../types';
 import { loadProgress, saveProgress, loadSettings, saveSettings, getUnlockedWorlds } from '../utils/storage';
 import { REWARDS } from '../data/rewards';
+import { useUser } from './UserContext';
 
 interface GameState {
   screen: Screen;
@@ -149,6 +150,9 @@ const GameContext = createContext<{
 } | null>(null);
 
 export function GameProvider({ children }: { children: ReactNode }) {
+  const { syncReady } = useUser();
+  const hasSynced = useRef(false);
+
   const [state, dispatch] = useReducer(gameReducer, {
     screen: 'splash',
     progress: loadProgress(),
@@ -159,10 +163,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
+    if (syncReady && !hasSynced.current) {
+      hasSynced.current = true;
+      dispatch({ type: 'LOAD_USER' });
+    }
+  }, [syncReady]);
+
+  useEffect(() => {
+    if (!hasSynced.current) return;
     saveProgress(state.progress);
   }, [state.progress]);
 
   useEffect(() => {
+    if (!hasSynced.current) return;
     saveSettings(state.settings);
   }, [state.settings]);
 
